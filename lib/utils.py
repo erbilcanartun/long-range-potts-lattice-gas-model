@@ -1,8 +1,7 @@
 """
-utils_plg.py — Utilities for the Potts-Lattice-Gas long-range RG.
+utils.py — Utilities for the Potts-Lattice-Gas long-range RG.
 
-Mirrors the style of your Ising utils.py: power-law initial couplings
-J_r = J0 / r^a, and analogously K_r = K0 / r^a, Delta_r = Delta0 / r^a.
+power-law initial couplings: J_r = J0 / r^a, and analogously K_r = K0 / r^a, Delta_r = Delta0 / r^a.
 
 Convention: index 0 is unused (or zero), couplings live at r = 1..D.
 """

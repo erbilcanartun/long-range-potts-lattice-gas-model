@@ -1,8 +1,8 @@
 # Long-range Potts-Lattice-Gas in $d=1$: Position-Space Renormalization Group
 
-A renormalization-group implementation for the one-dimensional Potts-Lattice-Gas (PLG) model with long-range power-law interactions, built as a direct analog of the long-range Ising RG code of Artun & Berker ([arXiv / *Phys. Rev. E* write-up](https://journals.aps.org), "Calculated Magnetization Curves and Hybrid-Order Phase Transition of the d=1 Ising Model with Long-Range Power-Law Interactions").
+A renormalization-group implementation for the one-dimensional Potts-Lattice-Gas (PLG) model with long-range power-law interactions.
 
-The Ising treatment flows a single coupling vector $J_r$ under a two-cell Niemeyer–van Leeuwen decimation. The PLG model carries three coupling vectors that must close on each other under RG: the Potts coupling $J_r$, a pair (biquadratic / vacancy-vacancy) coupling $K_r$, and a per-distance chemical potential $\Delta_r$. Each step of this RG applies the three-coupling recursion derived in the handwritten notes of Umut (included separately) to a discretized power-law interaction vector.
+The Ising treatment flows a single coupling vector $J_r$ under a two-cell Niemeyer–van Leeuwen decimation. The PLG model carries three coupling vectors that must close on each other under RG: the Potts coupling $J_r$, a pair (biquadratic / vacancy-vacancy) coupling $K_r$, and a per-distance chemical potential $\Delta_r$. Each step of this RG applies the three-coupling recursion relation to a discretized power-law interaction vector.
 
 ---
 
@@ -17,7 +17,7 @@ where at each site $i$:
 - $t_i \in \{0, 1\}$ is an occupancy variable (1 = site occupied, 0 = vacant);
 - $s_i \in \{a, b, c\}$ is a Potts color defined only when $t_i = 1$.
 
-The bare couplings are power-law initialized, $X_r = X_0 / r^a$ for $X \in \{J, K, \Delta\}$, exactly as in the Ising code. The range exponent $a$ controls the physics: short-range-like at large $a$, equivalent-neighbor-like at small $a$. The rigorous-results cutoffs for the Ising case ($a=2$ marks the onset of first-order behavior, $a>2$ destroys ordering above $T=0$) are expected to carry over to the Potts-lattice-gas case with modifications from the extra coupling dimensions.
+The bare couplings are power-law initialized, $X_r = X_0 / r^a$ for $X \in \{J, K, \Delta\}$. The range exponent $a$ controls the physics: short-range-like at large $a$, equivalent-neighbor-like at small $a$. The rigorous-results cutoffs for the Ising case ($a=2$ marks the onset of first-order behavior, $a>2$ destroys ordering above $T=0$) are expected to carry over to the Potts-lattice-gas case with modifications from the extra coupling dimensions.
 
 ### State space per site
 
@@ -52,75 +52,20 @@ $$e^{J'_{r'}} = \frac{R(aa)}{R(ab)}, \qquad e^{K'_{r'}} = \frac{R(ab)\,R(00)}{R(
 
 ---
 
-## Files
-
-The code is organized to mirror the Ising implementation file-for-file. If you have the Ising files `utils.py`, `decimation_contiguous.py`, `decimation_staggered.py`, `renormalization.py`, their PLG analogs are:
-
-| PLG file | Mirrors (Ising) | Role |
-|---|---|---|
-| `utils_plg.py` | `utils.py` | Power-law builders `build_J`, `build_K`, `build_Delta` (index 0 unused, index $r$ for $r \geq 1$). Also exports a Numba-compatible `logsumexp`. |
-| `decimation_contiguous_plg.py` | `decimation_contiguous.py` | Two-cell decimation with the contiguous geometry: cell 0 sits at lattice sites $[1, 2, 3]$, cell $r'$ at $[3r'+1, 3r'+2, 3r'+3]$. Intracell spacing = 1. `r_max(D) = (D-2)//3`. `required_initial_max_distance`: $D \leftarrow 3D + 2$ per step. |
-| `decimation_staggered_plg.py` | `decimation_staggered.py` | Two-cell decimation with the staggered geometry: cell 0 at $[1, 3, 5]$, cell $r'$ at a staggered offset that alternates parity. Intracell spacing = 2. `r_max(D)` is an iterative lookup. `required_initial_max_distance` alternates $3D+2$ and $3D+4$ depending on parity. |
-| `renormalization_plg.py` | `renormalization.py` | Orchestration: `rg_step`, `determine_r_max`, `construct_transfer_matrix` (4×4), `determine_phase_from_TM`, `find_Jc`. Imports from one of the two decimation files via `from decimation_{...}_plg import *`; switch by commenting one of the two import lines at the top. |
-| `run_rg_flow_plg.py` | (driver script) | End-user API: `generate_rg_flow`, `extract_flows`, `plot_rg_flow`. Analog of your hand-written Ising driver. |
-
-Each decimation file provides the same named functions used by the orchestrator: `r_max`, `required_initial_max_distance`, `renorm_at_r`, `log_R_four`, `project_cell`, `pair_energy`, `two_cell_log_weight`. This keeps the swap between contiguous and staggered to a single-line import change.
-
----
-
-## Quick start
-
-```python
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..', 'lib')))
-
-from run_rg_flow_plg import generate_rg_flow, extract_flows, plot_rg_flow
-
-# Bare couplings at r=1 and power-law range exponent
-J0, K0, Delta0 = 0.5, 0.0, 0.3
-a = 1.2
-
-# How far out in r we want the final coupling vectors to reach,
-# and how many RG iterations to run
-max_dist_final = 10
-n_steps = 10
-
-couplings, T_list = generate_rg_flow(
-    J0, K0, Delta0, a,
-    max_dist_final=max_dist_final,
-    n_steps=n_steps,
-    trace_TM=True,  TM_r=1,
-)
-
-flows = extract_flows(couplings, max_dist_final)
-
-plot_rg_flow(
-    flows,
-    distances_to_plot=list(range(1, 10)),
-    fig_name="rg_flow_plg.png",
-)
-
-# Inspect the normalized 4x4 pair transfer matrix at r=1 at each step
-for k, T in enumerate(T_list):
-    print(f"RG step {k}:\n", T.round(4))
-```
-
-`couplings` is a dict with keys `'J'`, `'K'`, `'Delta'`, each mapping to a list of length `n_steps + 1` containing the coupling vector at every step. `extract_flows` reshapes each entry into a rectangular array of shape `(n_steps+1, max_dist_final+1)` for plotting.
-
 ### Switching between contiguous and staggered geometry
 
-Edit the top of `renormalization_plg.py`:
+Edit the top of `renormalization.py`:
 
 ```python
-from decimation_contiguous_plg import *
-#from decimation_staggered_plg import *
+from decimation_contiguous import *
+#from decimation_staggered import *
 ```
 
 to
 
 ```python
-#from decimation_contiguous_plg import *
-from decimation_staggered_plg import *
+#from decimation_contiguous import *
+from decimation_staggered import *
 ```
 
 Everything downstream (`rg_step`, `find_Jc`, the driver) adapts automatically.
@@ -176,7 +121,7 @@ This is the bookkeeping that makes the three extraction formulas from the handwr
 
 ## Cell geometry reference
 
-For `decimation_contiguous_plg.py` (lattice spacing 1 within a cell):
+For `decimation_contiguous.py` (lattice spacing 1 within a cell):
 
 ```
 Cell 0:      sites 1 2 3
@@ -184,7 +129,7 @@ Cell r':     sites 3r'+1, 3r'+2, 3r'+3
 Intracell distances:   1, 1, 2   (same as Ising contiguous)
 ```
 
-For `decimation_staggered_plg.py` (lattice spacing 2 within a cell):
+For `decimation_staggered.py` (lattice spacing 2 within a cell):
 
 ```
 Cell 0:       sites 1 3 5
@@ -193,21 +138,14 @@ Cell r even:  m = 7 + 6*(r-2)/2,      sites [m, m+2, m+4]
 Intracell distances:   2, 2, 4   (same as Ising staggered)
 ```
 
-Both conventions are verified against the corresponding Ising files (`decimation_contiguous.py`, `decimation_staggered.py`) and produce identical `right_pos` sequences and `r_max` behavior — only the state-space per site and the pair-energy formula differ.
-
 ---
 
 ## Dependencies
 
 - `numpy`
 - `numba` (for JIT compilation of the hot inner loops)
-- `matplotlib` (only in `run_rg_flow_plg.py`, for plotting)
+- `matplotlib` (only in `run_rg_flow.py`, for plotting)
 
 The Numba decorators cache compiled binaries on first run, so the second invocation in a session is much faster.
 
 ---
-
-## Attribution
-
-Model derivation and Potts-lattice-gas setup: handwritten notes by Umut.
-RG methodology and cell structure: adapted from Artun & Berker's long-range Ising treatment (*Phys. Rev. E*), itself built on the two-cell Niemeyer–van Leeuwen procedure [Niemeyer & van Leeuwen, *Physica* 71, 17 (1974); van Leeuwen, *Phys. Rev. Lett.* 34, 1056 (1975); Berker & Wortis, *Phys. Rev. B* 14, 4946 (1976)].

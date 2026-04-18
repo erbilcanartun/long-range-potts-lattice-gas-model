@@ -1,9 +1,7 @@
 """
-decimation_staggered_plg.py
+decimation_staggered.py
 ----------------------------
 Staggered-cell variant of the d=1 long-range PLG two-cell decimation.
-
-Mirrors decimation_staggered.py (Ising) exactly:
 
     Cell 0     occupies lattice sites [1, 3, 5]   (intracell spacing 2)
     Cell r'    occupies:
@@ -26,7 +24,7 @@ from numba import njit
 
 
 # =============================================================================
-# Geometry (mirrors Ising staggered)
+# Geometry
 # =============================================================================
 
 @njit(cache=True)

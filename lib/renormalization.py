@@ -1,23 +1,21 @@
 """
-renormalization_plg.py
+renormalization.py
 ----------------------
 Main RG driver for the d=1 long-range Potts-Lattice-Gas model.
 
-Mirrors the structure of the Ising `renormalization.py`:
     - rg_step(J, K, Delta, a=None)  -> (J', K', Delta')
     - required_initial_max_distance(max_dist_final, n_steps)
     - construct_transfer_matrix(J, K, Delta, r)
     - find_Jc(...)  [bisection on the J0 axis at fixed K0, Delta0]
 
-Choose the cell geometry by commenting one of the two imports below,
-exactly like the Ising renormalization.py does.
+Choose the cell geometry by commenting one of the two imports below.
 """
 
 import numpy as np
 from numba import njit
 
-from decimation_contiguous_plg import *
-#from decimation_staggered_plg import *
+#from decimation_contiguous import *
+from decimation_staggered import *
 
 
 @njit(cache=True)

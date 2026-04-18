@@ -1,12 +1,9 @@
 """
-decimation_contiguous_plg.py
+decimation_contiguous.py
 -----------------------------
 Niemeyer-van Leeuwen two-cell cluster decimation for the
 d=1 long-range Potts-Lattice-Gas (PLG) model.
 
-This file is the Potts-lattice-gas analog of decimation_contiguous.py
-(Ising, spin +/-1). It uses the IDENTICAL cell geometry and indexing
-convention as the Ising file:
 
     Cell 0     occupies lattice sites [1, 2, 3]
     Cell r'    occupies lattice sites [3r'+1, 3r'+2, 3r'+3]
@@ -57,7 +54,7 @@ from numba import njit
 
 
 # =============================================================================
-# Cell geometry (matches Ising contiguous)
+# Cell geometry
 # =============================================================================
 
 @njit(cache=True)

@@ -144,7 +144,7 @@ Intracell distances:   2, 2, 4   (same as Ising staggered)
 
 - `numpy`
 - `numba` (for JIT compilation of the hot inner loops)
-- `matplotlib` (only in `run_rg_flow.py`, for plotting)
+- `matplotlib`
 
 The Numba decorators cache compiled binaries on first run, so the second invocation in a session is much faster.
 

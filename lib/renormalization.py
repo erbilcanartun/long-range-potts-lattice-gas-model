@@ -169,7 +169,7 @@ def find_Jc(a, K0=0.0, Delta0=0.0,
     D0 = required_initial_max_distance(max_dist_final, max_steps)
 
     # Local import to avoid a hard dep cycle if users rename utils
-    from utils_plg import build_J, build_K, build_Delta
+    from utils import build_J, build_K, build_Delta
 
     def grows(J0_val):
         J = build_J(J0_val, a, D0)
